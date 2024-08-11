@@ -3,7 +3,7 @@
   "project_id": "td-testing-420801",
   "private_key_id": "${process.env.NEXT_PUBLIC_GOOGLE_PRIVATE_KEY_ID}",
 "private_key": "${process.env.NEXT_PUBLIC_GOOGLE_PRIVATE_KEY}",
-  "client_email": "todak-testing@td-testing-420801.iam.gserviceaccount.com",
+  "client_email": "${process.env.NEXT_PUBLIC_GOOGLE_CLIENT_EMAIL}",
   "client_id": "111459734079420503902",
   "auth_uri": "https://accounts.google.com/o/oauth2/auth",
   "token_uri": "https://oauth2.googleapis.com/token",
