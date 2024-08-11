@@ -1,0 +1,71 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 70 8% 15%;
+    --foreground: 69 100% 97%;
+    --muted: 70 12% 19%;
+    --muted-foreground: 70 12% 69%;
+    --popover: 70 8% 12%;
+    --popover-foreground: 0 0% 100%;
+    --card: 70 8% 13%;
+    --card-foreground: 0 0% 100%;
+    --border: 0 0% 20%;
+    --input: 0 0% 23%;
+    --primary: 54 70% 68%;
+    --primary-foreground: 54 70% 8%;
+    --secondary: 54 30% 25%;
+    --secondary-foreground: 54 30% 85%;
+    --accent: 70 8% 30%;
+    --accent-foreground: 70 8% 90%;
+    --destructive: 6 99% 48%;
+    --destructive-foreground: 0 0% 100%;
+    --ring: 54 70% 68%;
+
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 70 8% 15%;
+    --foreground: 69 100% 97%;
+    --muted: 70 12% 19%;
+    --muted-foreground: 70 12% 69%;
+    --popover: 70 8% 12%;
+    --popover-foreground: 0 0% 100%;
+    --card: 70 8% 13%;
+    --card-foreground: 0 0% 100%;
+    --border: 0 0% 20%;
+    --input: 0 0% 23%;
+    --primary: 54 70% 68%;
+    --primary-foreground: 54 70% 8%;
+    --secondary: 54 30% 25%;
+    --secondary-foreground: 54 30% 85%;
+    --accent: 70 8% 30%;
+    --accent-foreground: 70 8% 90%;
+    --destructive: 6 99% 48%;
+    --destructive-foreground: 0 0% 100%;
+    --ring: 54 70% 68%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+.grecaptcha-badge {
+  visibility: hidden;
+}
+
+.grecaptcha-badge::after {
+  content: "";
+  display: block;
+  padding-bottom: 100%;
+}
