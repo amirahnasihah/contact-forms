@@ -1,6 +1,6 @@
 import { Metadata } from "next";
 
-const title = "Fun Mode";
+const title = "Tricky Trails";
 
 export const metadata: Metadata = {
   title,
@@ -40,10 +40,10 @@ export const metadata: Metadata = {
   },
 };
 
-export default function BasicFormLayout({
+export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  return <div className="container mx-auto pt-10">{children}</div>;
+  return <div className="mx-auto pt-10">{children}</div>;
 }

@@ -6,7 +6,7 @@ import path from "path";
 import { replaceMergeTags, stripHTMLTags } from "../../../../email/helpers";
 import { transporter, mailOptions } from "../../../../email/client";
 
-const secretKey = process.env._RECAPTCHA_SECRET_KEY;
+const secretKey = process.env.RECAPTCHA_SECRET_KEY;
 
 type EmailFormData = {
   text: string;

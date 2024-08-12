@@ -61,7 +61,7 @@
 }
 
 .grecaptcha-badge {
-  visibility: hidden;
+  visibility: block;
 }
 
 .grecaptcha-badge::after {

@@ -28,7 +28,6 @@ import { useToast } from "@/components/ui/use-toast";
 import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import StatusButton from "@/components/animata/submit-button";
 
 export function BasicForm() {
   const {

@@ -50,7 +50,7 @@ const formSchema = z.object({
   message: z.string().optional(),
 });
 
-export default function FormZod() {
+export default function PdfForm() {
   const {
     control,
     register,
@@ -299,9 +299,6 @@ export default function FormZod() {
           </CardFooter>
         </form>
       </Form>
-      <Link href={"/"} className="underline">
-        home
-      </Link>
     </Card>
   );
 }

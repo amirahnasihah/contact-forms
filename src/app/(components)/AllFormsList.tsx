@@ -122,28 +122,6 @@ export default function AllFormsList() {
         </Balancer>
       </motion.header>
 
-      {/* <motion.div
-        initial={{
-          y: 100,
-          opacity: 0,
-        }}
-        animate={{
-          y: 0,
-          opacity: 1,
-          transition: {
-            duration: 0.5,
-          },
-        }}
-      >
-        <button
-          className="box-border inline-block h-11 transform-gpu cursor-pointer touch-manipulation whitespace-nowrap rounded-full border-b-4 border-solid border-transparent bg-orange-600 px-4 py-3 text-center text-sm font-bold uppercase leading-5 tracking-wider text-white shadow-2xl outline-none transition-all duration-200 hover:brightness-110 active:border-b-0 active:border-t-4 active:bg-none disabled:cursor-auto"
-          role="button"
-        >
-          Ready to slay &rarr;
-          <span className="absolute inset-0 -z-10 rounded-full border-b-4 border-solid border-transparent bg-orange-500" />
-        </button>
-      </motion.div> */}
-
       <div className="relative flex w-full flex-wrap lg:flex-nowrap justify-center gap-8 px-4 py-12 sm:flex-row sm:gap-0">
         <FeatureCard
           feature={{
@@ -179,7 +157,7 @@ export default function AllFormsList() {
             title: "Send PDF file + Zod validation",
             imageUrl:
               "https://hips.hearstapps.com/hmg-prod/images/envelope-in-pdf-file-email-pdf-document-flat-royalty-free-illustration-1581700117.jpg",
-            pageUrl: "/form-zod",
+            pageUrl: "/pdf-form",
           }}
           initial={{
             y: yOffset,
