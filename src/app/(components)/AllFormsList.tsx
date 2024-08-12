@@ -113,10 +113,10 @@ export default function AllFormsList() {
         }}
         className="flex max-w-md flex-col items-center gap-2 text-center"
       >
-        <h1 className="text-3xl font-black text-orange-600">
+        <h1 className="text-2xl lg:text-3xl font-black text-orange-600 px-1 lg:px-0">
           Easily Build Form Components
         </h1>
-        <Balancer className="block text-lg text-neutral-500">
+        <Balancer className="block lg:text-lg text-neutral-500">
           Nextjs, Tailwind CSS, ZOD Validation, Google integration, Attached PDF
           file, Copy to sender email etc.
         </Balancer>

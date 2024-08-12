@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 import { Map } from "lucide-react";
 
@@ -61,6 +63,13 @@ const HeroSectionTextHover: React.FC<HeroCardProps> = ({ className }) => {
     },
   ];
 
+  const handleClick = () => {
+    const element = document.getElementById("be-form-master");
+    if (element) {
+      element.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
   return (
     <div
       className={cn(
@@ -117,7 +126,10 @@ const HeroSectionTextHover: React.FC<HeroCardProps> = ({ className }) => {
             </div>
           </div>
         </div>
-        <button className="cursor-pointer rounded-3xl bg-orange-600 px-4 py-2 font-mono tracking-tighter hover:bg-primary hover:text-secondary">
+        <button
+          className="cursor-pointer rounded-3xl bg-orange-600 px-4 py-2 font-mono tracking-tighter hover:bg-primary hover:text-secondary"
+          onClick={handleClick}
+        >
           Be Form Master
         </button>
       </div>

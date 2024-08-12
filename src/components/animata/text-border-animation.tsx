@@ -41,11 +41,17 @@ export default function TextBorderAnimation({
 
   return (
     <div
+      id="be-form-master"
       onMouseEnter={handleHover}
       onMouseLeave={handleHoverExit}
       className="overflow-hidden text-center"
     >
-      <span className={cn("text-5xl font-bold text-foreground", className)}>
+      <span
+        className={cn(
+          "text-3xl lg:text-5xl font-bold text-foreground",
+          className
+        )}
+      >
         {text}
       </span>
       <div className="relative mt-1 h-1 w-full">
