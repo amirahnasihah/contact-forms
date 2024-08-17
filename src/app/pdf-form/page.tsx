@@ -4,7 +4,7 @@ import PdfForm from "./(components)/PdfForm";
 export default function FormPage() {
   return (
     <div className="flex flex-col gap-5">
-      <TextBorderAnimation text="PDF Form" />
+      <TextBorderAnimation text="Send with PDF File" />
       <PdfForm />
     </div>
   );

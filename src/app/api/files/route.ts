@@ -11,12 +11,12 @@ export async function POST(req: NextRequest) {
   try {
     const formData = await req.formData();
 
-    const username = formData.get("username") as string;
-    const phoneNumber = formData.get("phoneNumber") as string;
+    const username = formData.get("name") as string;
     const email = formData.get("email") as string;
-    const favourite = formData.get("favourite") as string;
-    const description = (formData.get("description") as string) || "";
+    const position = formData.get("position") as string;
+    const message = (formData.get("message") as string) || "";
     const gRecaptchaToken = formData.get("gRecaptchaToken") as string;
+    const document = formData.get("document") as File;
 
     // RECAPTCHA verification
     let recaptchaResponse;
@@ -49,12 +49,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Read HTML file for email content
-    const htmlFilePath = path.join(
-      process.cwd(),
-      "email",
-      "basic-mail-template",
-      "mail.html"
-    );
+    const htmlFilePath = path.join(process.cwd(), "email", "thankyou.html");
     let htmlContent;
 
     try {
@@ -70,9 +65,8 @@ export async function POST(req: NextRequest) {
     const emailData = {
       username,
       email,
-      description,
-      phoneNumber,
-      favourite,
+      position,
+      message,
     };
 
     const capitalizedName = username
@@ -83,31 +77,44 @@ export async function POST(req: NextRequest) {
     htmlContent = replaceMergeTags(emailData, htmlContent);
     const plainTextContent = stripHTMLTags(htmlContent);
 
-    // to receipient
+    // Process attachments
+    const attachments = document
+      ? [
+          {
+            content: await document
+              .arrayBuffer()
+              .then((buf) => Buffer.from(buf).toString("base64")),
+            filename: document.name,
+            contentType: document.type,
+            encoding: "base64",
+          },
+        ]
+      : [];
+
     const mainMailOptions = {
       ...mailOptions,
-      to: "amrhnshh@gmail.com",
-      // cc: ["other@email.com", "another@email.com"],
-      subject: `👋 Hello`,
+      to: process.env.SMTP_EMAIL,
+      subject: `New Form - ${capitalizedName}`,
       replyTo: email,
       text: plainTextContent,
       html: htmlContent,
+      attachments: attachments,
     };
 
-    // copy to sender
     const bccMailOptions = {
       from: `NO-REPLY 🚫 ${process.env.SMTP_EMAIL}`,
       to: email,
-      subject: `Copy of Email - ${capitalizedName}`,
+      subject: `Copy of Your Form`,
       text: plainTextContent,
       html: htmlContent,
+      attachments: attachments,
     };
 
     // SEND MAIL
     try {
-      // Send Main email
+      // Send main email
       await transporter.sendMail(mainMailOptions);
-      // Send BCC (copy to candidate)
+      // Send BCC email (copy to candidate)
       await transporter.sendMail(bccMailOptions);
     } catch (error) {
       console.error("Error sending email:", error);
@@ -119,7 +126,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json(
       {
-        message: "Success save data and send email",
+        message: "Success, email sent",
         score: recaptchaResponse.score,
       },
       { status: 200 }

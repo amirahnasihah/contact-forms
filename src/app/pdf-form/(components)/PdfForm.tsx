@@ -42,7 +42,7 @@ import Link from "next/link";
 // message: string;
 
 const formSchema = z.object({
-  name: z.string().min(2, {
+  username: z.string().min(2, {
     message: "name must be at least 2 characters.",
   }),
   email: z.string().email({ message: "Please provide a valid email address." }),
@@ -89,7 +89,7 @@ export default function PdfForm() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: "",
+      username: "",
       email: "",
       position: "",
     },
@@ -99,12 +99,9 @@ export default function PdfForm() {
 
   // 2. Define a submit handler.
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log("form data:-", values);
-
     if (!executeRecaptcha) {
-      console.log("Execute recaptcha not available yet");
       setNotification(
-        "Execute recaptcha not available yet, likely meaning key not recaptcha key not set"
+        "Execute recaptcha not available yet, likely meaning key not set"
       );
       return;
     }
@@ -114,54 +111,40 @@ export default function PdfForm() {
     try {
       const gReCaptchaToken = await executeRecaptcha("enquiryFormSubmit");
 
-      // Submit the form data to the server
-      const response = await fetch("/api/send", {
-        method: "POST",
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-        body: JSON.stringify({
-          ...values,
-          document: await Promise.all(
-            document.map((doc) => {
-              return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.readAsDataURL(doc);
-                reader.onload = () => resolve(reader.result);
-                reader.onerror = (error) => reject(error);
-              });
-            })
-          ),
-          gRecaptchaToken: gReCaptchaToken,
-        }),
-      });
+      const formData = new FormData();
+      formData.append("name", values.username);
+      formData.append("email", values.email);
+      formData.append("position", values.position);
+      formData.append("message", values.message || "");
+      formData.append("gRecaptchaToken", gReCaptchaToken);
 
-      console.log("form response:-", values);
+      if (document.length > 0) {
+        formData.append("document", document[0], document[0].name);
+      }
+
+      const response = await fetch("/api/files", {
+        method: "POST",
+        body: formData,
+      });
 
       if (response.ok) {
         const responseData = await response.json();
-        console.log("response data:-", responseData);
-
-        if (responseData.success === true) {
-          alert("Sent Success");
-          reset();
+        if (responseData.success) {
           setNotification(`Success with score: ${responseData.score}`);
-          // router.push("/");
+          reset();
+          setDocument([]);
         } else {
-          setNotification(`Failure with score: ${responseData.score}`);
+          setNotification(`${responseData.message || "Unknown error"}`);
         }
       } else {
-        setNotification("Failure with score: unable to get score");
+        setNotification(`Server error: ${response.statusText}`);
       }
     } catch (error) {
-      console.error("Error submitting form:", error);
       setNotification("Error submitting form");
     }
 
     setSubmitting(false);
-    reset();
   }
-
   return (
     <Card className="border-none bg-transparent shadow-none">
       <CardHeader>
@@ -174,7 +157,7 @@ export default function PdfForm() {
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
           <CardContent className="grid w-full items-center gap-5">
             <FormField
-              name="name"
+              name="username"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>

@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+      html {
+        height: 100%;
+        box-sizing: border-box;
+      }
+
+      *,
+      *:before,
+      *:after {
+        box-sizing: inherit;
+      }
+
+      body {
+        position: relative;
+        margin: 0;
+        padding-bottom: 6rem;
+        min-height: 100%;
+        font-family: "Helvetica Neue", Arial, sans-serif;
+      }
+
+      .demo {
+        margin: 0 auto;
+        padding-top: 32px;
+        max-width: 640px;
+        width: 94%;
+      }
+
+      .demo h1 {
+        margin-top: 0;
+      }
+
+      /**
+ * Footer Styles
+ */
+
+      .footer {
+        position: absolute;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        padding: 1rem;
+        background-color: #efefef;
+        text-align: center;
+      }
+
+      .paragraph {
+        font-size: 18px;
+        line-height: 1.4;
+        color: #484848;
+      }
+    </style>
+    <title>Thank you email</title>
+  </head>
+
+  <body>
+    <main>
+      <div class="demo">
+        <h1>You “Always at the bottom” of the Footer</h1>
+
+        <p>I often find myself designing a website where the footer must rest at the bottom of the page, even if the
+          content above it is too short to push it to the bottom of the viewport naturally.</p>
+
+        <p>However, if the content is taller than the user's viewport, then the footer should disappear from view as it
+          would normally, resting at the bottom of the page (not fixed to the viewport).</p>
+      </div>
+
+      <div>
+        <p class="paragraph" style="font-weight: 700">Form details:</p>
+        <p>
+          Name:
+          <span style="text-transform: capitalize"> {{ username }}</span>
+        </p>
+      </div>
+
+      <div class="footer">This will always appear at the bottom of the page, but <strong>not fixed</strong>.</div>
+    </main>
+  </body>
+
+</html>
