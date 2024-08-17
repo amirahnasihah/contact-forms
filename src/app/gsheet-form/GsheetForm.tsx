@@ -1,48 +1,30 @@
 "use client";
-
+import React, { useEffect, useState } from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-
-import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
-import axios from "axios";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
-import { useDropzone } from "react-dropzone";
+import { DialogFooter } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/components/ui/use-toast";
 import { useRouter } from "next/navigation";
+import { useDropzone } from "react-dropzone";
+import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
+import { Card } from "@/components/ui/card";
 
-// name: string;
-// email: string;
-// number: number;
-// company: string;
-// position: string;
-// linkedin: string;
-// message: string;
-
+// ZOD Validation
 const formSchema = z.object({
   name: z.string().min(2, {
-    message: "name must be at least 2 characters.",
+    message: "Name must be at least 2 characters.",
   }),
   email: z.string().email({ message: "Please provide a valid email address." }),
   position: z.string().min(2, { message: "Must be at least 2 characters." }),
@@ -50,61 +32,39 @@ const formSchema = z.object({
 });
 
 export default function GsheetForm() {
-  const {
-    control,
-    register,
-    handleSubmit,
-    formState: { isSubmitting, errors },
-    clearErrors,
-    reset,
-  } = useForm<typeof formSchema>();
+  const { toast } = useToast();
   const router = useRouter();
-  const [notification, setNotification] = useState("");
   const [submitting, setSubmitting] = useState(false);
-
-  // ATTACHMENT
+  const [notification, setNotification] = useState("");
   const [document, setDocument] = useState<File[]>([]);
 
   const { acceptedFiles, getRootProps, getInputProps } = useDropzone({
-    accept: {
-      "application/pdf": [".pdf"],
-    },
+    accept: { "application/pdf": [".pdf"] },
     multiple: false,
   });
 
-  const files = acceptedFiles.map((file) => (
-    <p key={file.name} className="text-[10px]">
-      {file.name}
-    </p>
-  ));
+  const { executeRecaptcha } = useGoogleReCaptcha();
 
   useEffect(() => {
-    if (acceptedFiles !== undefined) {
+    if (acceptedFiles.length > 0) {
       setDocument(acceptedFiles);
     }
-  }, [acceptedFiles, setDocument]);
+  }, [acceptedFiles]);
 
-  // 1. Define your form.
-  const form = useForm<z.infer<typeof formSchema>>({
+  // Define your form with zod validation
+  const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: "",
       email: "",
       position: "",
+      message: "",
     },
   });
 
-  const { executeRecaptcha } = useGoogleReCaptcha();
-
-  // 2. Define a submit handler.
-  async function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log("form data:-", values);
-
+  async function onSubmit(values: any) {
     if (!executeRecaptcha) {
-      console.log("Execute recaptcha not available yet");
-      setNotification(
-        "Execute recaptcha not available yet, likely meaning key not recaptcha key not set"
-      );
+      setNotification("Recaptcha not ready, refresh page.");
       return;
     }
 
@@ -113,192 +73,128 @@ export default function GsheetForm() {
     try {
       const gReCaptchaToken = await executeRecaptcha("enquiryFormSubmit");
 
-      // Submit the form data to the server
-      const response = await fetch(
-        "https://script.google.com/macros/s/AKfycbx4RWyCk1BANa4hjgAJceW-Pm0mWKo_6WUDB77001JTGadQLi5IBXKK_R7zyPJibMwdCA/exec",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            ...values,
-            document: await Promise.all(
-              document.map((doc) => {
-                return new Promise((resolve, reject) => {
-                  const reader = new FileReader();
-                  reader.readAsDataURL(doc);
-                  reader.onload = () => resolve(reader.result);
-                  reader.onerror = (error) => reject(error);
-                });
-              })
-            ),
-            gRecaptchaToken: gReCaptchaToken,
-          }),
-        }
-      );
+      const formData = new FormData();
+      formData.append("name", values.name);
+      formData.append("email", values.email);
+      formData.append("position", values.position);
+      formData.append("message", values.message || "");
+      formData.append("gRecaptchaToken", gReCaptchaToken);
 
-      console.log("form response:-", values);
+      if (document.length > 0) {
+        formData.append("document", document[0], document[0].name);
+      }
+
+      const response = await fetch("/api/gsheet", {
+        method: "POST",
+        body: formData,
+      });
 
       if (response.ok) {
-        const responseData = await response.json();
-        console.log("response data:-", responseData);
-
-        if (responseData.success === true) {
-          alert("Sent Success");
-          setNotification(`Success with score: ${responseData.score}`);
-          reset();
-          // router.push("/");
-        } else {
-          setNotification(`Failure with score: ${responseData.score}`);
-        }
+        toast({ title: "✅ Email submitted successfully!" });
+        form.reset();
+        router.push("/join-us");
       } else {
-        setNotification("Failure with score: unable to get score");
+        toast({ variant: "destructive", title: "Submission failed." });
       }
     } catch (error) {
-      console.error("Error submitting form:", error);
-      setNotification("Error submitting form");
+      toast({
+        variant: "destructive",
+        title: "Error occurred during submission.",
+      });
     }
 
     setSubmitting(false);
-    reset();
   }
 
   return (
-    <Card className="border-none bg-transparent shadow-none">
-      <CardHeader>
-        <CardTitle>Apply to Todak</CardTitle>
-        <CardDescription>Get directly in touch with the team</CardDescription>
-        <Separator />
-      </CardHeader>
-
+    <Card className="border-none bg-transparent shadow-none p-5">
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-          <CardContent className="grid w-full items-center gap-5">
-            <FormField
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>
-                    Full Name{" "}
-                    <span className="text-[10px]">
-                      - Your full name as per IC.
-                    </span>
-                  </FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="Muhammad Bin Abdullah"
-                      {...field}
-                      autoComplete="on"
-                      className="capitalize"
-                    />
-                  </FormControl>
-
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="email@example.com"
-                      {...field}
-                      autoComplete="on"
-                    />
-                  </FormControl>
-
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              name="position"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Position Apply</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="E.g. Digital Marketer"
-                      {...field}
-                      autoComplete="on"
-                      className="capitalize"
-                    />
-                  </FormControl>
-
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              name="document"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Upload File</FormLabel>
-                  <FormControl>
-                    <div
-                      {...getRootProps()}
-                      className="bg-white hover:cursor-pointer text-black py-2 rounded-md text-center hover:bg-gray-200"
-                    >
-                      <input {...getInputProps()} />
-                      <p>
-                        {document.length > 0
-                          ? `${document.length} file selected`
-                          : "Choose file here"}
-                      </p>
-                      {files}
-                    </div>
-                  </FormControl>
-
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              name="message"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Message</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      placeholder="What do you like about us?"
-                      {...field}
-                      autoComplete="on"
-                    />
-                  </FormControl>
-
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </CardContent>
-
-          <CardFooter className="flex flex-col justify-center items-start gap-5 mt-[2rem]">
-            <Button disabled={isSubmitting} type="submit">
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-2">
+          <FormField
+            control={form.control}
+            name="name"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Full Name</FormLabel>
+                <FormControl>
+                  <Input {...field} placeholder="Muhammad Bin Abdullah" />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="email"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Email</FormLabel>
+                <FormControl>
+                  <Input {...field} placeholder="youremail@example.com" />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="position"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Position Apply</FormLabel>
+                <FormControl>
+                  <Input {...field} placeholder="E.g. Digital Marketer" />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            name="document"
+            render={() => (
+              <FormItem>
+                <FormLabel>Upload Resume</FormLabel>
+                <FormControl>
+                  <div
+                    {...getRootProps()}
+                    className="bg-white hover:cursor-pointer text-black py-2 rounded-md text-center hover:bg-gray-200"
+                  >
+                    <input {...getInputProps()} />
+                    <p>
+                      {document.length > 0
+                        ? `${document.length} file selected`
+                        : "Choose file here"}
+                    </p>
+                    {acceptedFiles.map((file) => (
+                      <p key={file.name}>{file.name}</p>
+                    ))}
+                  </div>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="message"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Message</FormLabel>
+                <FormControl>
+                  <Textarea
+                    {...field}
+                    placeholder="What interests you about?"
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <DialogFooter className="pt-2">
+            <Button className="w-full" type="submit" disabled={submitting}>
               {submitting ? "Submitting..." : "Submit"}
             </Button>
-            <p className="text-sm text-muted-foreground dark:text-muted-foreground">
-              By submitting the form, you agree to our{" "}
-              <span className="underline hover:text-foreground">
-                PDPA Notice
-              </span>{" "}
-              acknowledge and our{" "}
-              <span className="underline hover:text-foreground">
-                Privacy Policy
-              </span>
-            </p>
-
-            {notification && (
-              <p className="text-sm text-red-500">{notification}</p>
-            )}
-          </CardFooter>
+          </DialogFooter>
         </form>
       </Form>
     </Card>
