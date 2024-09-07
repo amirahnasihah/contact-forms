@@ -4,6 +4,7 @@ import "./globals.css";
 import GoogleCaptchaWrapper from "@/lib/google-captcha-wrapper";
 import Footer from "@/components/Footer";
 import { Toaster } from "@/components/ui/toaster";
+import { GoogleTagManager } from "@next/third-parties/google";
 
 const font = Nunito({ subsets: ["latin"] });
 
@@ -55,6 +56,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <GoogleTagManager gtmId="G-0FHNHC5817" />
       <body className={`flex flex-col min-h-screen ${font.className}`}>
         <GoogleCaptchaWrapper>
           <main className="flex-grow">{children}</main>
